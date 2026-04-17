@@ -4,6 +4,7 @@ import Footer from '../components/layout/Footer';
 import ImpactChart from '../components/ImpactChart';
 import ContributionGraph from '../components/stats/ContributionGraph';
 import EditLogModal from '../components/EditLogModal';
+import UserProgressTable from '../components/UserProgressTable';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../lib/supabase';
 import type { RecentLog } from '../types/log';
@@ -144,6 +145,9 @@ export default function AdminDashboard() {
             </div>
           ))}
         </div>
+
+        {/* User Progress Table */}
+        <UserProgressTable />
 
         {/* Impact Charts Integration */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -142,7 +142,7 @@ Xem chi tiết tại: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
 
 ### 🔲 Còn lại
 - [x] Google Chat cronjob (GitHub Actions) ✅ 2026-04-17
-- [ ] User Progress table trên Admin (ai đã/chưa nộp hôm nay)
+- [x] User Progress table trên Admin (ai đã/chưa nộp hôm nay) ✅ 2026-04-17
 - [x] Test Google Chat webhook thành công ✅ 2026-04-17
 
 ---
