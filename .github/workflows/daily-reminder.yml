@@ -2,8 +2,8 @@ name: 📢 Google Chat Daily Reminder
 
 on:
   schedule:
-    # 17:00 ICT (GMT+7) = 10:00 UTC — Thứ 2 đến Thứ 6
-    - cron: '0 10 * * 1-5'
+    # 17:45 ICT (GMT+7) = 10:45 UTC — Thứ 2 đến Thứ 6
+    - cron: '45 10 * * 1-5'
   workflow_dispatch: # Cho phép trigger thủ công để test
 
 jobs:
