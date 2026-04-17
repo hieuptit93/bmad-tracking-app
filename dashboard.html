@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Impact Tracker - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-tint": "#be0038",
+                    "on-error": "#ffffff",
+                    "outline": "#906f70",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#f9f9f9",
+                    "tertiary": "#5c5c5c",
+                    "outline-variant": "#e5bdbe",
+                    "surface-container-high": "#e8e8e8",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#1b1c1c",
+                    "tertiary-fixed": "#e3e2e2",
+                    "on-tertiary-fixed-variant": "#464747",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f1",
+                    "surface-container": "#eeeeee",
+                    "on-background": "#1a1c1c",
+                    "on-primary-fixed": "#40000d",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#e21e4a",
+                    "on-secondary-container": "#636262",
+                    "on-surface": "#1a1c1c",
+                    "on-tertiary-fixed": "#1b1c1c",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#5c3f41",
+                    "on-primary-container": "#fffbff",
+                    "surface-dim": "#dadada",
+                    "on-tertiary-container": "#fefcfc",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-variant": "#e2e2e2",
+                    "on-primary-fixed-variant": "#920029",
+                    "primary-fixed": "#ffdada",
+                    "primary-fixed-dim": "#ffb2b6",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-container-low": "#f3f3f4",
+                    "secondary-fixed": "#e5e2e1",
+                    "secondary-container": "#e2dfde",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#ffb2b6",
+                    "tertiary-container": "#747474",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#ba0036",
+                    "surface": "#f9f9f9",
+                    "tertiary-fixed-dim": "#c7c6c6",
+                    "secondary": "#5f5e5e",
+                    "background": "#f9f9f9",
+                    "inverse-surface": "#2f3131"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Inter"
+                    ],
+                    "body": [
+                            "Inter"
+                    ],
+                    "label": [
+                            "Inter"
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f9; color: #1a1c1c; }
+        .material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; font-size: 24px; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; word-wrap: normal; direction: ltr; -webkit-font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; }
+        
+        /* Ambient Shadows */
+        .shadow-ambient {
+            box-shadow: rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.04) 0px 2px 6px, rgba(0,0,0,0.1) 0px 4px 8px;
+        }
+        .shadow-ambient-hover:hover {
+            box-shadow: rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.06) 0px 4px 12px, rgba(0,0,0,0.12) 0px 8px 16px;
+        }
+        
+        /* Gradient Button */
+        .bg-gradient-primary {
+            background-image: linear-gradient(135deg, #ba0036 0%, #e21e4a 100%);
+        }
+        
+        /* Glassmorphism */
+        .glass-nav {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased pt-20 pb-12">
+<!-- TopNavBar Shared Component -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.04),0px_4px_8px_rgba(0,0,0,0.1)]">
+<div class="flex justify-between items-center h-16 px-6 md:px-12 w-full mx-auto max-w-7xl">
+<!-- Brand Logo -->
+<div class="text-xl font-bold text-[#ba0036] dark:text-[#e21e4a] tracking-tighter">
+                AI Impact Tracker
+            </div>
+<!-- Navigation Links (Web) -->
+<div class="hidden md:flex space-x-8 font-['Inter'] tracking-tight font-medium">
+<a class="text-[#ba0036] dark:text-[#e21e4a] border-b-2 border-[#ba0036] pb-1 px-1" href="#">Bảng điều khiển</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors px-1 hover:bg-stone-100/50 dark:hover:bg-stone-800/50 rounded-lg active:scale-95 transition-all duration-200 ease-out" href="#">Tác động</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors px-1 hover:bg-stone-100/50 dark:hover:bg-stone-800/50 rounded-lg active:scale-95 transition-all duration-200 ease-out" href="#">Nhóm</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors px-1 hover:bg-stone-100/50 dark:hover:bg-stone-800/50 rounded-lg active:scale-95 transition-all duration-200 ease-out" href="#">Cài đặt</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center space-x-4">
+<button class="text-stone-600 hover:text-stone-900 transition-colors hover:bg-stone-100/50 rounded-full p-2">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full object-cover" data-alt="close up portrait of a young woman with natural makeup looking directly at the camera, soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeBeQSg1Qr03yWYkmqvO7SBXEkvbLgoaNN5vKYr2SA3NVUSggtlCX4lY3jKVS3MVRu6YD3Or_pc4zK15WjH_zxQ4HHFLvT1m8LQW-j8g2GGFc6YuLf_1k1_1GbMD3_ozYPojnVYOJJFtgj2Sxt_A0-Qkfsu466UNjustAyhdiNnROmtvahHQ_kpsTBqsdQ6N2AuiYrV6TVOYRm1Zyhf0oyf9HJCRP-63BVIM0QZX1RsNArEHP6YDN4MnLM8DchbUMBnroO_kOcCg"/>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-6 md:px-12 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Daily AI Usage Report -->
+<div class="lg:col-span-7 space-y-6">
+<div class="mb-4">
+<h1 class="text-3xl font-bold tracking-tight text-on-surface">Ghi nhận Sử dụng AI</h1>
+<p class="text-secondary mt-1">Ghi lại các chỉ số công việc để theo dõi hiệu quả đạt được</p>
+</div>
+<div class="bg-surface-container-lowest rounded-[20px] p-8 shadow-ambient shadow-ambient-hover transition-shadow duration-300">
+<form class="space-y-6">
+<!-- Task Name -->
+<div>
+<label class="block text-sm font-semibold text-on-surface mb-2 tracking-wide" for="taskName">Tên nhiệm vụ</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-secondary focus:ring-2 focus:ring-primary/40 transition-all outline-none" id="taskName" placeholder="ví dụ: Tái cấu trúc thành phần xác thực" type="text"/>
+</div>
+<!-- Time Estimate vs Actual -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-semibold text-on-surface mb-2 tracking-wide" for="estTime">Thời gian dự kiến (giờ)</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-secondary focus:ring-2 focus:ring-primary/40 transition-all outline-none" id="estTime" placeholder="4.0" type="number"/>
+</div>
+<div>
+<label class="block text-sm font-semibold text-on-surface mb-2 tracking-wide" for="actTime">Thời gian thực tế (giờ)</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface placeholder:text-secondary focus:ring-2 focus:ring-primary/40 transition-all outline-none" id="actTime" placeholder="2.5" type="number"/>
+</div>
+</div>
+<!-- AI Focus Area -->
+<div>
+<label class="block text-sm font-semibold text-on-surface mb-3 tracking-wide">Lĩnh vực AI tập trung</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full text-sm font-medium bg-primary-container/10 text-primary border border-primary/20 transition-colors" type="button">Xem tất cả</button>
+<button class="px-4 py-2 rounded-full text-sm font-medium bg-surface-container-low text-secondary hover:bg-surface-container transition-colors" type="button">Logic Backend</button>
+<button class="px-4 py-2 rounded-full text-sm font-medium bg-surface-container-low text-secondary hover:bg-surface-container transition-colors" type="button">Kiểm thử</button>
+<button class="px-4 py-2 rounded-full text-sm font-medium bg-surface-container-low text-secondary hover:bg-surface-container transition-colors" type="button">Code mẫu</button>
+<button class="px-4 py-2 rounded-full text-sm font-medium bg-surface-container-low text-secondary hover:bg-surface-container transition-colors" type="button">Sửa lỗi</button>
+</div>
+</div>
+<!-- AI Tool Used -->
+<div>
+<label class="block text-sm font-semibold text-on-surface mb-2 tracking-wide" for="aiTool">Công cụ AI chính đã sử dụng</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary/40 transition-all outline-none appearance-none" id="aiTool">
+<option>Cursor</option>
+<option>Copilot</option>
+<option>ChatGPT</option>
+<option>Claude</option>
+</select>
+</div>
+<!-- Rating -->
+<div>
+<label class="block text-sm font-semibold text-on-surface mb-2 tracking-wide">Đánh giá mức độ hỗ trợ của AI</label>
+<div class="flex space-x-1 text-primary">
+<span class="material-symbols-outlined cursor-pointer" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined cursor-pointer" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined cursor-pointer" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined cursor-pointer" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-outline-variant cursor-pointer" data-icon="star">star</span>
+</div>
+</div>
+<!-- Submit CTA -->
+<div class="pt-4">
+<button class="w-full bg-gradient-primary text-on-primary font-medium py-4 px-6 rounded-lg hover:opacity-90 transition-opacity flex justify-center items-center space-x-2" type="submit">
+<span>Gửi báo cáo</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Right Column: Team Dashboard -->
+<div class="lg:col-span-5 space-y-6">
+<div class="mb-4">
+<h2 class="text-3xl font-bold tracking-tight text-on-surface invisible lg:visible">Tổng quan</h2>
+</div>
+<!-- Hero Metric Card -->
+<div class="bg-gradient-primary rounded-[20px] p-8 shadow-ambient shadow-ambient-hover transition-shadow duration-300 relative overflow-hidden">
+<div class="absolute -right-10 -top-10 opacity-10">
+<span class="material-symbols-outlined text-9xl" data-icon="bolt" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div class="relative z-10">
+<p class="text-on-primary/80 text-sm uppercase tracking-widest font-semibold mb-2">TÁC ĐỘNG CỦA NHÓM HÔM NAY</p>
+<h3 class="text-4xl md:text-5xl font-extrabold text-on-primary tracking-tighter leading-tight">34% <span class="text-2xl font-semibold opacity-80">Thời gian tiết kiệm</span></h3>
+<div class="mt-6 flex items-center space-x-2 text-on-primary text-sm font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span>+4% so với hôm qua</span>
+</div>
+</div>
+</div>
+<!-- Activity Feed -->
+<div class="bg-surface-container-lowest rounded-[20px] p-6 shadow-ambient">
+<div class="flex justify-between items-center mb-6">
+<h4 class="text-lg font-bold text-on-surface">Các báo cáo gần đây</h4>
+<button class="text-primary text-sm font-medium hover:underline">Xem tất cả</button>
+</div>
+<div class="space-y-5">
+<!-- Feed Item 1 -->
+<div class="flex space-x-4 items-start">
+<img alt="John Doe" class="w-10 h-10 rounded-full object-cover shadow-sm" data-alt="headshot of a smiling young man in a grey t-shirt against a plain background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0Ec0ihWDjJvSilHVbYPsaOBeTSXzq-pvUso0J7pLOQWxwwyFbLwbtJBQL5pwQXscEEdZYOelBCoaLsIp_DxI0bGLNIz2nH2A_drJz44QTVjrBBZtcmL-4iOt4nAqLhkeim6C-_u6xIT0Knqp6BwJ-rLtkVApRe9HTATnUGpLOfpfhtbZaN4SVzo5GXCCpPFvdJXLyxKqW54lTNivbzFzboKZSUuIdJkv4o0ha9wwHEKGF0SEpVq21uUfxW-VZzWLG4lTUjatJMA"/>
+<div>
+<p class="text-sm text-on-surface leading-snug"><span class="font-bold">John Doe</span> đã tiết kiệm <span class="font-bold text-primary">2 giờ</span> bằng Cursor cho Thành phần UI</p>
+<p class="text-xs text-secondary mt-1">Cursor hiện đang mang lại hiệu quả cao nhất cho các nhiệm vụ UI trong tuần này</p>
+</div>
+</div>
+<!-- Feed Item 2 -->
+<div class="flex space-x-4 items-start">
+<img alt="Sarah Smith" class="w-10 h-10 rounded-full object-cover shadow-sm" data-alt="portrait of a smiling woman with dark hair outdoors in soft sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVEFT8tdH6B1c9eM-q3sM4IMlAb6YG9PSoiAclaGB9c0JEjBeEjWwd_r4VPORZXe1VkEGzQH5f4GPi8r1wxHqKrLZy3J_GH7mzLWWx4vFuEc5sFyHwvjoAHy6nxFgEYpdrTwVTPaV8OLjo2TUYXGKZLDip3CUfm60Pqkfch3oRzDw4oS89DE2EX0nJ42Zajrmh0uFQRUfMGkdV3ZlzW3yKp_MxxUtaRqOihGCmS1Q46mMoiutwyPU1NEq6HiocZOK-Nvr3ycKPjA"/>
+<div>
+<p class="text-sm text-on-surface leading-snug"><span class="font-bold">Sarah Smith</span> đã tiết kiệm <span class="font-bold text-primary">4.5 giờ</span> bằng Copilot cho Logic Backend</p>
+<p class="text-xs text-secondary mt-1">Cursor hiện đang mang lại hiệu quả cao nhất cho các nhiệm vụ UI trong tuần này</p>
+</div>
+</div>
+<!-- Feed Item 3 -->
+<div class="flex space-x-4 items-start">
+<img alt="Michael Chen" class="w-10 h-10 rounded-full object-cover shadow-sm" data-alt="close up portrait of a man wearing glasses outdoors with blurred trees in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMM1WvqCTDv__K2LKexmPImkKQJ3Q5PX2thj-wc01GS6yJ-caI0nzNikoHSUGVkw9Dh2VoRYxBnj9_B9InmvwDi3Ziv0AsRwW4-PfO8osuhPtJVX4TmlqjNORbSEcuoOqUT_FKqUY-XLk_Gk5HQr3ZhzrDR4CGr4EmikjE9x6sy6i7AtLCTE4wimAxVGQjsCa3WL6qZKtfrH-WZO_35apnhhWUzAgxu8p_xZKhQ1ZF3Lw_O9wM_iiC39zSHc_2cEvOJ3aOXU5NgQ"/>
+<div>
+<p class="text-sm text-on-surface leading-snug"><span class="font-bold">Michael Chen</span> đã tiết kiệm <span class="font-bold text-primary">1 giờ</span> bằng ChatGPT cho Sửa lỗi</p>
+<p class="text-xs text-secondary mt-1">Cursor hiện đang mang lại hiệu quả cao nhất cho các nhiệm vụ UI trong tuần này</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Insights -->
+<div class="bg-surface-container-low rounded-[20px] p-6 flex items-center space-x-4">
+<div class="bg-primary/10 p-3 rounded-xl">
+<span class="material-symbols-outlined text-primary" data-icon="lightbulb" data-weight="fill" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div>
+<h5 class="text-sm font-bold text-on-surface">Thông tin chi tiết</h5>
+<p class="text-xs text-secondary mt-1">Cursor hiện đang mang lại hiệu quả cao nhất cho các nhiệm vụ UI trong tuần này</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shared Component -->
+<footer class="w-full border-t border-stone-200/15 dark:border-stone-800/15 bg-stone-50 dark:bg-stone-950 mt-16">
+<div class="flex flex-col md:flex-row justify-between items-center py-8 px-6 md:px-12 max-w-7xl mx-auto">
+<div class="font-semibold text-stone-900 dark:text-stone-100 mb-4 md:mb-0">
+                AI Impact Tracker
+            </div>
+<div class="flex flex-wrap justify-center gap-6 mb-4 md:mb-0">
+<a class="font-['Inter'] text-sm text-stone-500 hover:text-[#ba0036] transition-colors" href="#">Chính sách Bảo mật</a>
+<a class="font-['Inter'] text-sm text-stone-500 hover:text-[#ba0036] transition-colors" href="#">Điều khoản Dịch vụ</a>
+<a class="font-['Inter'] text-sm text-stone-500 hover:text-[#ba0036] transition-colors" href="#">Tài liệu</a>
+<a class="font-['Inter'] text-sm text-stone-500 hover:text-[#ba0036] transition-colors" href="#">Hỗ trợ</a>
+</div>
+<div class="font-['Inter'] text-sm text-stone-500">© 2026 BMAD AI.</div>
+</div>
+</footer>
+</body></html>

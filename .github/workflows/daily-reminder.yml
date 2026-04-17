@@ -1,0 +1,56 @@
+name: 📢 Google Chat Daily Reminder
+
+on:
+  schedule:
+    # 17:00 ICT (GMT+7) = 10:00 UTC — Thứ 2 đến Thứ 6
+    - cron: '0 10 * * 1-5'
+  workflow_dispatch: # Cho phép trigger thủ công để test
+
+jobs:
+  send-reminder:
+    name: Send Daily Reminder to Google Chat
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send message to Google Chat
+        run: |
+          curl -s -X POST "${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "cards": [
+                {
+                  "header": {
+                    "title": "📢 AI Impact Tracker",
+                    "subtitle": "Nhắc nhở cuối ngày",
+                    "imageUrl": "https://www.gstatic.com/images/icons/material/system/2x/insights_black_48dp.png"
+                  },
+                  "sections": [
+                    {
+                      "widgets": [
+                        {
+                          "textParagraph": {
+                            "text": "Đã 5 giờ chiều rồi! 🕔 Hôm nay bạn dùng AI làm gì hay ho không? <b>Chỉ mất 1 phút</b> để ghi lại và giúp team thấy ROI thực sự của AI tools!"
+                          }
+                        },
+                        {
+                          "buttons": [
+                            {
+                              "textButton": {
+                                "text": "✍️ Ghi nhận ngay",
+                                "onClick": {
+                                  "openLink": {
+                                    "url": "${{ secrets.APP_URL }}"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }'
+
+      - name: Log result
+        run: echo "✅ Reminder sent at $(date -u '+%Y-%m-%d %H:%M UTC')"
