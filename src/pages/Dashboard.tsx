@@ -1,28 +1,16 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import EditLogModal from '../components/EditLogModal';
+import LogItem from '../components/LogItem';
 import ContributionGraph from '../components/stats/ContributionGraph';
 import { useAuth } from '../components/AuthProvider';
 import { supabase } from '../lib/supabase';
+import type { RecentLog } from '../types/log';
 
 const CATEGORIES = ['Frontend', 'Backend', 'Kiểm thử', 'Code mẫu', 'Sửa lỗi', 'DevOps', 'Tài liệu'];
 const AI_TOOLS = ['Cursor', 'GitHub Copilot', 'ChatGPT', 'Claude', 'Gemini', 'Windsurf', 'Khác'];
-
-interface RecentLog {
-  id: string;
-  user_id: string;
-  task_name: string;
-  tool_used: string;
-  category: string;
-  estimate_hours: number;
-  actual_hours: number;
-  percent_saved: number;
-  rating: number | null;
-  notes: string | null;
-  created_at: string;
-  profiles: { full_name: string | null; avatar_url: string | null } | null;
-}
 
 interface TeamStat {
   total_tasks: number;
@@ -62,7 +50,7 @@ export default function Dashboard() {
         .from('ai_impact_logs')
         .select('*, profiles(full_name, avatar_url)')
         .order('created_at', { ascending: false })
-        .limit(10),
+        .limit(6),
       supabase.from('team_impact_today').select('*').single(),
     ]);
 
@@ -167,7 +155,7 @@ export default function Dashboard() {
             <p className="text-secondary mt-1">Ghi lại các chỉ số công việc để theo dõi hiệu quả đạt được</p>
           </div>
 
-          <div className="bg-surface-container-lowest rounded-[20px] p-8 shadow-ambient">
+          <div className="bg-surface-container-lowest rounded-[20px] p-8 shadow-ambient border border-stone-50">
             <h2 className="text-lg font-bold mb-6">Ghi nhận sử dụng BMAD AI hôm nay</h2>
 
             {hoursSaved !== null && (
@@ -340,9 +328,6 @@ export default function Dashboard() {
               </div>
             </form>
           </div>
-
-          {/* Monthly History Graph */}
-          <ContributionGraph userId={user?.id} title="Thành tích cá nhân" />
         </div>
 
         {/* ── RIGHT: Stats + Feed ─────────────────────────── */}
@@ -372,7 +357,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-surface-container-lowest rounded-[20px] p-6 shadow-ambient">
+          {/* Monthly History Graph - Compact version on the right */}
+          <ContributionGraph userId={user?.id} title="Thành tích cá nhân" compact={true} />
+
+          <div className="bg-surface-container-lowest rounded-[20px] p-6 shadow-ambient border border-stone-50">
             <div className="flex justify-between items-center mb-5">
               <h4 className="text-base font-bold">Báo cáo gần đây</h4>
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Realtime" />
@@ -396,77 +384,28 @@ export default function Dashboard() {
                 <p className="text-sm">Chưa có báo cáo nào. Hãy là người đầu tiên!</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {recentLogs.map((log) => {
-                  const name = log.profiles?.full_name || 'User';
-                  const initials = name.charAt(0).toUpperCase();
-                  const savedH = (log.estimate_hours - log.actual_hours).toFixed(1);
-                  const isOwn = log.user_id === user?.id;
-                  const isToday = new Date(log.created_at).toDateString() === new Date().toDateString();
+              <div className="space-y-6">
+                {recentLogs.slice(0, 5).map((log) => (
+                  <LogItem
+                    key={log.id}
+                    log={log}
+                    onEdit={setEditingLog}
+                    onDelete={handleDelete}
+                    isDeleting={isDeleting === log.id}
+                  />
+                ))}
 
-                  return (
-                    <div key={log.id} className="flex gap-3 items-start group relative">
-                      <div className="relative w-9 h-9 flex-shrink-0">
-                        {log.profiles?.avatar_url ? (
-                          <img 
-                            src={log.profiles.avatar_url} 
-                            alt={name} 
-                            className="w-9 h-9 rounded-full object-cover" 
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).classList.add('hidden');
-                              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                        ) : null}
-                        <div className={`w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm ${log.profiles?.avatar_url ? 'hidden absolute inset-0' : ''}`}>
-                          {initials}
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm leading-snug pr-12">
-                          <span className="font-semibold">{name}</span>
-                          {' '}tiết kiệm{' '}
-                          <span className="font-bold text-primary">{savedH}h</span>
-                          {' '}bằng {log.tool_used}
-                        </p>
-                        <p className="text-xs text-secondary mt-0.5 truncate">{log.task_name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">{log.category}</span>
-                          <span className="text-[10px] text-emerald-600 font-medium">{log.percent_saved}% tiết kiệm</span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span className="text-[10px] text-stone-400">
-                          {new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                        
-                        {isOwn && isToday && (
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => setEditingLog(log)}
-                              className="p-1 text-blue-500 hover:bg-blue-50 rounded transition-colors"
-                              title="Sửa"
-                            >
-                              <span className="material-symbols-outlined text-sm">edit</span>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(log.id)}
-                              disabled={isDeleting === log.id}
-                              className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                              title="Xóa"
-                            >
-                              <span className="material-symbols-outlined text-sm">
-                                {isDeleting === log.id ? 'sync' : 'delete'}
-                              </span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                {recentLogs.length > 5 && (
+                  <div className="pt-2 border-t border-stone-100 flex justify-center">
+                    <Link 
+                      to="/logs" 
+                      className="group flex items-center gap-2 px-6 py-2.5 rounded-xl bg-stone-50 hover:bg-stone-100 text-stone-600 font-semibold text-sm transition-all duration-300 active:scale-95"
+                    >
+                      <span>Xem tất cả báo cáo</span>
+                      <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>

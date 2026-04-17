@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend,
+  ResponsiveContainer,
 } from 'recharts';
 import { supabase } from '../lib/supabase';
 
@@ -135,7 +135,7 @@ export default function ImpactChart() {
                     boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                     fontSize: 12,
                   }}
-                  formatter={(value: number) => [`${value}h`, 'Giờ tiết kiệm']}
+                  formatter={(value: any) => [`${value}h`, 'Giờ tiết kiệm']}
                 />
                 <Area
                   type="monotone"
@@ -166,7 +166,7 @@ export default function ImpactChart() {
                       boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                       fontSize: 12,
                     }}
-                    formatter={(value: number) => [value, 'Báo cáo']}
+                    formatter={(value: any) => [value, 'Báo cáo']}
                   />
                   <Bar
                     dataKey="count"

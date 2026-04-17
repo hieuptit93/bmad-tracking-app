@@ -51,12 +51,12 @@ export default function Navbar() {
           AI Impact Tracker
         </div>
 
-        {/* Navigation Links */}
-        <div className="hidden md:flex space-x-2">
-          <NavLink to="/">Báo cáo</NavLink>
-          {isAdmin && <NavLink to="/admin">Dashboard</NavLink>}
-          <NavLink to="/settings">Cài đặt</NavLink>
-        </div>
+          <div className="hidden md:flex space-x-2">
+            <NavLink to="/">Báo cáo</NavLink>
+            {isAdmin && <NavLink to="/admin">Dashboard</NavLink>}
+            {isAdmin && <NavLink to="/users">Thành viên</NavLink>}
+            <NavLink to="/settings">Cài đặt</NavLink>
+          </div>
 
         {/* User Dropdown */}
         <div className="relative" ref={dropdownRef}>
@@ -111,14 +111,24 @@ export default function Navbar() {
                   Cài đặt tài khoản
                 </Link>
                 {isAdmin && (
-                  <Link
-                    to="/admin"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-base text-stone-400">admin_panel_settings</span>
-                    Quản trị hệ thống
-                  </Link>
+                  <>
+                    <Link
+                      to="/admin"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base text-stone-400">admin_panel_settings</span>
+                      Quản trị hệ thống
+                    </Link>
+                    <Link
+                      to="/users"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base text-stone-400">group</span>
+                      Quản lý người dùng
+                    </Link>
+                  </>
                 )}
               </div>
 

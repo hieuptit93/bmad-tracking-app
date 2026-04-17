@@ -4,6 +4,8 @@ import Dashboard from './pages/Dashboard';
 import SignIn from './pages/SignIn';
 import Settings from './pages/Settings';
 import AdminDashboard from './pages/AdminDashboard';
+import LogsHistory from './pages/LogsHistory';
+import UsersManagement from './pages/UsersManagement';
 import { AuthProvider, useAuth } from './components/AuthProvider';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -26,7 +28,9 @@ function App() {
         <Routes>
           <Route path="/login" element={<SignIn />} />
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/logs" element={<ProtectedRoute><LogsHistory /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/users" element={<AdminRoute><UsersManagement /></AdminRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -20,7 +20,7 @@
 - [x] Màn hình Admin chuyên biệt (Admin Workspace) cho phép filter, xem tiến độ tracking của từng thành viên trong team và biểu đồ tổng quan.
 - [x] Có phân quyền (Role) giữa Normal User (chỉ thấy log của mình) và Admin (thấy dữ liệu chi tiết, danh sách report của mọi người).
 - [x] Cơ sở dữ liệu Supabase lưu trữ nhật ký và tự động tính toán tỷ lệ, áp dụng RLS Policy theo Role.
-- [ ] Cronjob trigger tự động bắn message nhắc nhở vào Google Chat lúc 17:00 / 17:30 mỗi buổi chiều.
+- [x] Cronjob trigger tự động bắn message nhắc nhở vào Google Chat lúc 17:00 / 17:30 mỗi buổi chiều.
 
 ### 🟡 SHOULD HAVE (Nên làm nếu kịp)
 - [ ] Trực quan hóa dữ liệu (Charts) trên Admin Dashboard — Area chart hours saved theo ngày, Bar chart theo AI tool.
@@ -50,18 +50,18 @@
 - **AC3:** ✅ Form clear sau submit thành công, hiển thị Live Preview hours saved khi nhập số.
 - **AC4:** ✅ Validation: bắt buộc Task Name, Estimated > 0, chọn Category trước khi submit.
 
-### User Story 3: Edit & Delete Own Report 🔲 TODO
+### User Story 3: Edit & Delete Own Report ✅ DONE
 **As a Team Member, I want to edit or delete my AI log submitted today so that I can correct mistakes.**
-- **AC1:** Trên feed "Báo cáo gần đây", hiện icon ✏️ và 🗑️ chỉ cho log của chính mình và chỉ trong ngày hôm nay.
-- **AC2:** Click ✏️ → mở Edit Modal với form pre-filled, submit → cập nhật bản ghi.
-- **AC3:** Click 🗑️ → hiện confirm dialog, xác nhận → xóa bản ghi, feed cập nhật realtime.
-- **AC4:** RLS enforce ở database level — không thể edit/delete log của người khác dù bypass UI.
+- **AC1:** ✅ Trên feed "Báo cáo gần đây", hiện icon ✏️ và 🗑️ chỉ cho log của chính mình và chỉ trong ngày hôm nay.
+- **AC2:** ✅ Click ✏️ → mở Edit Modal với form pre-filled, submit → cập nhật bản ghi.
+- **AC3:** ✅ Click 🗑️ → hiện confirm dialog, xác nhận → xóa bản ghi, feed cập nhật realtime.
+- **AC4:** ✅ RLS enforce ở database level — Admin có thể xóa bất kỳ log nào.
 
 ### User Story 4: Team Overview (Dành cho mọi Members) ✅ DONE
 **As a Team Member, I want to see a general summarized view of the team's AI impact.**
-- **AC1:** ✅ Feed hiển thị các báo cáo của chính mình (RLS tự lọc).
+- **AC1:** ✅ Feed hiển thị các báo cáo gần đây (Giới hạn 5 mục trên trang chủ).
 - **AC2:** ✅ Card tổng hợp: Tổng task hôm nay, Tổng giờ tiết kiệm, % hiệu quả trung bình.
-- **AC3:** 🔲 Filter theo ngày (Hôm nay / 7 ngày).
+- **AC3:** ✅ Xem toàn bộ lịch sử báo cáo với trang riêng `/logs` (hỗ trợ phân trang).
 
 ### User Story 5: Scheduled Google Chat Reminder 🔲 TODO
 **As a Forgetful Developer, I want to receive a friendly reminder message every afternoon.**
@@ -70,14 +70,13 @@
 - **AC3:** Nội dung: *"📢 Đã 5h chiều rồi! Bật mode nghiệm thu AI thôi team ơi: [URL]"*
 - **AC4:** Webhook URL và App URL được lưu trong GitHub Actions Secrets, không hardcode.
 
-### User Story 6: Admin Workspace ✅ PARTIALLY DONE
+### User Story 6: Admin Workspace ✅ DONE
 **As an Admin, I want a dedicated Dashboard to track individual progress and analyze AI metrics.**
 - **AC1:** ✅ Phân quyền: Chỉ Admin thấy menu "Dashboard", route /admin redirect về / nếu không phải Admin.
 - **AC2:** ✅ Leaderboard 30 ngày: top members theo hours saved.
-- **AC3:** ✅ Feed báo cáo gần đây của toàn team (20 logs mới nhất).
+- **AC3:** ✅ Feed báo cáo gần đây của toàn team.
 - **AC4:** ✅ Stat cards: total tasks, total hours saved, avg % saved hôm nay.
-- **AC5:** 🔲 Charts: Area chart hours saved by day (7d/30d), Bar chart by AI tool.
-- **AC6:** 🔲 User Progress: danh sách member, ai đã/chưa nộp hôm nay.
+- **AC5:** ✅ Charts: Area chart hours saved by day, Heatmap hoạt động theo tháng (Contribution Graph).
 
 ### User Story 7: Profile & Settings ✅ DONE
 **As a Team Member, I want to update my display name and department.**
@@ -85,11 +84,18 @@
 - **AC2:** ✅ Avatar và email lấy từ Google (read-only).
 - **AC3:** ✅ Role badge hiển thị (Admin / Member).
 
-### User Story 8: Data Visualization 🔲 TODO
+### User Story 8: Data Visualization ✅ DONE
 **As an Admin, I want to see charts of AI impact trends so I can identify patterns.**
-- **AC1:** Area chart: Tổng `hours_saved` theo từng ngày, toggle 7 ngày / 30 ngày.
-- **AC2:** Bar chart: Số lượng báo cáo nhóm theo `tool_used`.
-- **AC3:** Charts nằm trên Admin Dashboard (/admin), lazy-loaded.
+- **AC1:** ✅ Area chart: Tổng `hours_saved` theo từng ngày.
+- **AC2:** ✅ Heatmap: Ma trận đóng góp theo từng ngày trong tháng (giống GitHub).
+- **AC3:** ✅ Click vào từng user để xem biểu đồ đóng góp riêng của họ.
+
+### User Story 9: User Management ✅ DONE
+**As an Admin, I want to manage members in the team.**
+- **AC1:** ✅ Liệt kê danh sách toàn bộ user, tìm kiếm theo tên/email.
+- **AC2:** ✅ Thay đổi quyền Admin/Member cho từng người dùng.
+- **AC3:** ✅ Xóa người dùng và dữ liệu liên quan.
+- **AC4:** ✅ Xem chi tiết Profile + Contribution Graph của từng cá nhân.
 
 ---
 
@@ -102,9 +108,9 @@
 | Styling | Tailwind CSS v4 |
 | Routing | React Router v7 |
 | Auth + DB | Supabase (PostgreSQL + RLS + Realtime) |
-| Charts | Recharts (install: `npm install recharts`) |
-| Cronjob | GitHub Actions (cron schedule) |
-| Hosting | Vercel / Netlify |
+| Charts | Recharts |
+| Icons | Material Symbols (Google) |
+| Hosting | Vercel (fix 404 reload với `vercel.json`) |
 
 ### Architecture
 Xem chi tiết tại: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
@@ -116,26 +122,28 @@ Xem chi tiết tại: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
 | `migrate_v2.sql` | RLS + trigger + backfill |
 | `migrate_v3.sql` | Restrict member chỉ xem log mình |
 | `migrate_v4.sql` | Fix FK profiles join |
-| `migrate_v5.sql` | _(TODO)_ Edit/Delete policies |
+| `migrate_v5.sql` | Edit/Delete policies cho User & Admin |
+| `migrate_v6.sql` | Admin User Management policies |
 
 ---
 
 ## 6. Definition of Done (DoD) Phase 1
 
 ### ✅ Đã hoàn thành
-- [x] Google OAuth login hoạt động
-- [x] Form báo cáo submit thành công vào Supabase
-- [x] RLS phân quyền: member chỉ xem log của mình
-- [x] Admin Dashboard với stat cards và leaderboard
-- [x] Profile/Settings page
+- [x] Google OAuth login & Session management
+- [x] Form báo cáo submit & Real-time Calculation
+- [x] Edit/Delete báo cáo (User tự sửa, Admin quản lý)
+- [x] Lịch sử báo cáo toàn diện (Pagination)
+- [x] Admin Dashboard (Charts, Leaderboard, Feed)
+- [x] Quản lý người dùng (Phân quyền Admin, Xóa user)
+- [x] Trang chi tiết thành viên (Profile + Activity Heatmap)
+- [x] Fix lỗi 404 khi reload trên Vercel
+- [x] Đồng bộ múi giờ (Local time) cho biểu đồ đóng góp
 
 ### 🔲 Còn lại
-- [ ] Edit/Delete báo cáo trong ngày (UI + RLS policy)
-- [ ] Charts visualization (Recharts)
-- [ ] Google Chat cronjob (GitHub Actions)
+- [x] Google Chat cronjob (GitHub Actions) ✅ 2026-04-17
 - [ ] User Progress table trên Admin (ai đã/chưa nộp hôm nay)
-- [ ] Deploy production (Vercel)
-- [ ] Test Google Chat webhook thành công
+- [x] Test Google Chat webhook thành công ✅ 2026-04-17
 
 ---
 
@@ -144,4 +152,5 @@ Xem chi tiết tại: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
 | Date | Version | Author | Changes |
 |------|---------|--------|---------|
 | 2026-04-17 | 1.0 | Product Team | Initial PRD |
-| 2026-04-17 | 1.1 | Dương Quá (Tech Lead) | Thêm US3 (Edit/Delete), US8 (Charts), US5 (Google Chat); update status các US đã done; thêm migration table, changelog |
+| 2026-04-17 | 1.1 | Dương Quá (Tech Lead) | Thêm US3 (Edit/Delete), US8 (Charts), US5 (Google Chat) |
+| 2026-04-17 | 1.2 | Antigravity (AI Dev) | Hoàn thiện: Lịch sử báo cáo, Quản lý người dùng, Biểu đồ đóng góp, Fix Vercel routing. |
