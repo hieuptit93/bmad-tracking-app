@@ -2,8 +2,8 @@ name: 📢 Google Chat Daily Reminder
 
 on:
   schedule:
-    # 17:45 ICT (GMT+7) = 10:45 UTC — Thứ 2 đến Thứ 6
-    - cron: '45 10 * * 1-5'
+    # 16:00 ICT (GMT+7) = 09:00 UTC — Thứ 2 đến Thứ 6
+    - cron: '0 9 * * 1-5'
   workflow_dispatch: # Cho phép trigger thủ công để test
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
                       "widgets": [
                         {
                           "textParagraph": {
-                            "text": "Đã 5 giờ chiều rồi! 🕔 Hôm nay bạn dùng AI làm gì hay ho không? <b>Chỉ mất 1 phút</b> để ghi lại và giúp team thấy ROI thực sự của AI tools!"
+                            "text": "Đã chiều rồi! 🕓 Hôm nay bạn dùng AI làm gì hay ho không? <b>Chỉ mất 1 phút</b> để ghi lại và giúp team thấy ROI thực sự của AI tools!"
                           }
                         },
                         {
