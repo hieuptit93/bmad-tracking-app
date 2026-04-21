@@ -1,0 +1,132 @@
+name: 🌅 Morning Missing Report Reminder
+
+on:
+  schedule:
+    # 7:00 AM ICT (GMT+7) = 0:00 UTC — Thứ 2 đến Thứ 6
+    - cron: '0 0 * * 1-5'
+  workflow_dispatch: # Manual trigger để test
+
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+  GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+  APP_URL: ${{ secrets.APP_URL }}
+
+jobs:
+  check-missing-reports:
+    name: Check & Notify Missing Reports
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get yesterday's date
+        id: dates
+        run: |
+          # Yesterday in UTC (workflow runs at 0:00 UTC = 7:00 ICT)
+          # So "yesterday" in ICT context is actually UTC yesterday
+          YESTERDAY=$(date -u -d "yesterday" '+%Y-%m-%d')
+          TODAY=$(date -u '+%Y-%m-%d')
+          echo "yesterday=$YESTERDAY" >> $GITHUB_OUTPUT
+          echo "today=$TODAY" >> $GITHUB_OUTPUT
+          echo "📅 Checking reports for: $YESTERDAY"
+
+      - name: Query Supabase for missing reporters
+        id: query
+        run: |
+          # Get all non-admin users
+          USERS_RESPONSE=$(curl -s \
+            "${SUPABASE_URL}/rest/v1/profiles?role=neq.admin&select=id,full_name,email" \
+            -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}")
+
+          echo "👥 All non-admin users:"
+          echo "$USERS_RESPONSE" | jq -r '.[] | .full_name // .email'
+
+          # Get yesterday's logs
+          YESTERDAY="${{ steps.dates.outputs.yesterday }}"
+          TODAY="${{ steps.dates.outputs.today }}"
+
+          LOGS_RESPONSE=$(curl -s \
+            "${SUPABASE_URL}/rest/v1/ai_impact_logs?created_at=gte.${YESTERDAY}T00:00:00&created_at=lt.${TODAY}T00:00:00&select=user_id" \
+            -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}")
+
+          echo "📝 Users who reported yesterday:"
+          echo "$LOGS_RESPONSE" | jq -r '.[].user_id' | sort -u
+
+          # Find missing users using jq
+          REPORTED_IDS=$(echo "$LOGS_RESPONSE" | jq -r '[.[].user_id] | unique')
+
+          MISSING_USERS=$(echo "$USERS_RESPONSE" | jq -r --argjson reported "$REPORTED_IDS" '
+            [.[] | select(.id as $id | $reported | index($id) | not)]
+            | map(.full_name // .email)
+            | join("\n")
+          ')
+
+          MISSING_COUNT=$(echo "$USERS_RESPONSE" | jq -r --argjson reported "$REPORTED_IDS" '
+            [.[] | select(.id as $id | $reported | index($id) | not)] | length
+          ')
+
+          echo "⚠️ Missing reporters ($MISSING_COUNT):"
+          echo "$MISSING_USERS"
+
+          # Save to outputs
+          echo "missing_count=$MISSING_COUNT" >> $GITHUB_OUTPUT
+
+          # Escape for JSON (replace newlines with \n)
+          MISSING_ESCAPED=$(echo "$MISSING_USERS" | sed ':a;N;$!ba;s/\n/\\n• /g')
+          if [ -n "$MISSING_ESCAPED" ]; then
+            MISSING_ESCAPED="• $MISSING_ESCAPED"
+          fi
+          echo "missing_list=$MISSING_ESCAPED" >> $GITHUB_OUTPUT
+
+      - name: Send Google Chat notification
+        if: steps.query.outputs.missing_count > 0
+        run: |
+          MISSING_COUNT="${{ steps.query.outputs.missing_count }}"
+          MISSING_LIST="${{ steps.query.outputs.missing_list }}"
+          YESTERDAY="${{ steps.dates.outputs.yesterday }}"
+
+          curl -s -X POST "$GOOGLE_CHAT_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"cards\": [
+                {
+                  \"header\": {
+                    \"title\": \"🌅 Báo cáo AI - Nhắc nhở buổi sáng\",
+                    \"subtitle\": \"Ngày ${YESTERDAY}\",
+                    \"imageUrl\": \"https://www.gstatic.com/images/icons/material/system/2x/warning_amber_48dp.png\"
+                  },
+                  \"sections\": [
+                    {
+                      \"widgets\": [
+                        {
+                          \"textParagraph\": {
+                            \"text\": \"<b>${MISSING_COUNT} thành viên</b> chưa báo cáo ngày hôm qua:\\n\\n${MISSING_LIST}\\n\\n📌 Vui lòng nhắc nhở các bạn ghi nhận AI usage nhé!\"
+                          }
+                        },
+                        {
+                          \"buttons\": [
+                            {
+                              \"textButton\": {
+                                \"text\": \"📊 Xem Dashboard\",
+                                \"onClick\": {
+                                  \"openLink\": {
+                                    \"url\": \"${APP_URL}\"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }"
+
+          echo "✅ Notification sent for $MISSING_COUNT missing reporters"
+
+      - name: Skip notification (all reported)
+        if: steps.query.outputs.missing_count == 0
+        run: |
+          echo "🎉 All team members reported yesterday! No notification needed."
