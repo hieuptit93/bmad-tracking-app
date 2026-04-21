@@ -17,20 +17,25 @@ jobs:
     name: Check & Notify Missing Reports
     runs-on: ubuntu-latest
     steps:
-      - name: Get yesterday's date
+      - name: Get date range
         id: dates
         run: |
-          # Yesterday in UTC (workflow runs at 0:00 UTC = 7:00 ICT)
-          # So "yesterday" in ICT context is actually UTC yesterday
           YESTERDAY=$(date -u -d "yesterday" '+%Y-%m-%d')
           TODAY=$(date -u '+%Y-%m-%d')
+          # Get 30 days ago for streak calculation
+          MONTH_AGO=$(date -u -d "30 days ago" '+%Y-%m-%d')
           echo "yesterday=$YESTERDAY" >> $GITHUB_OUTPUT
           echo "today=$TODAY" >> $GITHUB_OUTPUT
+          echo "month_ago=$MONTH_AGO" >> $GITHUB_OUTPUT
           echo "📅 Checking reports for: $YESTERDAY"
 
-      - name: Query Supabase for missing reporters
+      - name: Query and calculate streaks
         id: query
         run: |
+          YESTERDAY="${{ steps.dates.outputs.yesterday }}"
+          TODAY="${{ steps.dates.outputs.today }}"
+          MONTH_AGO="${{ steps.dates.outputs.month_ago }}"
+
           # Get all non-admin users
           USERS_RESPONSE=$(curl -s \
             "${SUPABASE_URL}/rest/v1/profiles?role=neq.admin&select=id,full_name,email" \
@@ -40,43 +45,74 @@ jobs:
           echo "👥 All non-admin users:"
           echo "$USERS_RESPONSE" | jq -r '.[] | .full_name // .email'
 
-          # Get yesterday's logs
-          YESTERDAY="${{ steps.dates.outputs.yesterday }}"
-          TODAY="${{ steps.dates.outputs.today }}"
-
+          # Get logs from last 30 days (for streak calculation)
           LOGS_RESPONSE=$(curl -s \
-            "${SUPABASE_URL}/rest/v1/ai_impact_logs?created_at=gte.${YESTERDAY}T00:00:00&created_at=lt.${TODAY}T00:00:00&select=user_id" \
+            "${SUPABASE_URL}/rest/v1/ai_impact_logs?created_at=gte.${MONTH_AGO}T00:00:00&select=user_id,created_at" \
             -H "apikey: ${SUPABASE_SERVICE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}")
 
-          echo "📝 Users who reported yesterday:"
-          echo "$LOGS_RESPONSE" | jq -r '.[].user_id' | sort -u
+          # Generate list of workdays (Mon-Fri) from yesterday going back
+          WORKDAYS=""
+          for i in $(seq 0 29); do
+            DAY=$(date -u -d "$YESTERDAY - $i days" '+%Y-%m-%d')
+            DOW=$(date -u -d "$DAY" '+%u')  # 1=Mon, 7=Sun
+            if [ "$DOW" -le 5 ]; then
+              WORKDAYS="$WORKDAYS $DAY"
+            fi
+          done
+          WORKDAYS=$(echo $WORKDAYS | tr ' ' '\n' | head -20)  # Limit to 20 workdays
+          echo "📆 Workdays to check: $(echo "$WORKDAYS" | wc -w)"
 
-          # Find missing users using jq
-          REPORTED_IDS=$(echo "$LOGS_RESPONSE" | jq -r '[.[].user_id] | unique')
+          # Create a JSON array of workdays
+          WORKDAYS_JSON=$(echo "$WORKDAYS" | jq -R -s 'split("\n") | map(select(length > 0))')
 
-          MISSING_USERS=$(echo "$USERS_RESPONSE" | jq -r --argjson reported "$REPORTED_IDS" '
-            [.[] | select(.id as $id | $reported | index($id) | not)]
-            | map(.full_name // .email)
-            | join("\n")
+          # Calculate streak for each user who missed yesterday
+          RESULT=$(echo "$USERS_RESPONSE" | jq -r --argjson logs "$LOGS_RESPONSE" --argjson workdays "$WORKDAYS_JSON" '
+            # Group logs by user and date
+            ($logs | group_by(.user_id) | map({key: .[0].user_id, value: [.[] | .created_at[:10]] | unique}) | from_entries) as $user_logs |
+
+            # For each user, calculate streak
+            [.[] |
+              . as $user |
+              ($user_logs[$user.id] // []) as $dates |
+
+              # Check if reported yesterday (first workday)
+              ($workdays[0]) as $yesterday |
+              ([$dates[] | select(. == $yesterday)] | length > 0) as $reported_yesterday |
+
+              # If not reported yesterday, count streak
+              if $reported_yesterday then
+                null
+              else
+                # Count consecutive workdays without report
+                (reduce $workdays[] as $day (
+                  {streak: 0, stop: false};
+                  if .stop then .
+                  elif ([$dates[] | select(. == $day)] | length > 0) then
+                    .stop = true
+                  else
+                    .streak += 1
+                  end
+                ) | .streak) as $streak |
+                {
+                  name: (.full_name // .email),
+                  streak: $streak
+                }
+              end
+            ] | map(select(. != null)) | sort_by(-.streak)
           ')
 
-          MISSING_COUNT=$(echo "$USERS_RESPONSE" | jq -r --argjson reported "$REPORTED_IDS" '
-            [.[] | select(.id as $id | $reported | index($id) | not)] | length
-          ')
+          echo "⚠️ Missing reporters with streaks:"
+          echo "$RESULT" | jq -r '.[] | "\(.name) (\(.streak))"'
 
-          echo "⚠️ Missing reporters ($MISSING_COUNT):"
-          echo "$MISSING_USERS"
-
-          # Save to outputs
+          MISSING_COUNT=$(echo "$RESULT" | jq 'length')
           echo "missing_count=$MISSING_COUNT" >> $GITHUB_OUTPUT
 
-          # Escape for JSON (replace newlines with \n)
-          MISSING_ESCAPED=$(echo "$MISSING_USERS" | sed ':a;N;$!ba;s/\n/\\n• /g')
-          if [ -n "$MISSING_ESCAPED" ]; then
-            MISSING_ESCAPED="• $MISSING_ESCAPED"
-          fi
-          echo "missing_list=$MISSING_ESCAPED" >> $GITHUB_OUTPUT
+          # Format for Google Chat: "• Name (streak)"
+          MISSING_LIST=$(echo "$RESULT" | jq -r '
+            map("• \(.name) (\(.streak))") | join("\\n")
+          ')
+          echo "missing_list=$MISSING_LIST" >> $GITHUB_OUTPUT
 
       - name: Send Google Chat notification
         if: steps.query.outputs.missing_count > 0
@@ -100,7 +136,7 @@ jobs:
                       \"widgets\": [
                         {
                           \"textParagraph\": {
-                            \"text\": \"<b>${MISSING_COUNT} thành viên</b> chưa báo cáo ngày hôm qua:\\n\\n${MISSING_LIST}\\n\\n📌 Vui lòng nhắc nhở các bạn ghi nhận AI usage nhé!\"
+                            \"text\": \"<b>${MISSING_COUNT} thành viên</b> chưa báo cáo (số trong ngoặc = số ngày liên tiếp quên):\\n\\n${MISSING_LIST}\\n\\n📌 Vui lòng nhắc nhở các bạn ghi nhận AI usage nhé!\"
                           }
                         },
                         {
