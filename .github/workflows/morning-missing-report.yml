@@ -2,8 +2,8 @@ name: 🌅 Morning Missing Report Reminder
 
 on:
   schedule:
-    # 7:00 AM ICT (GMT+7) = 0:00 UTC — Thứ 2 đến Thứ 6
-    - cron: '0 0 * * 1-5'
+    # 7:00 AM ICT (GMT+7) = 0:00 UTC — Thứ 3 đến Thứ 7 (check report ngày làm việc trước)
+    - cron: '0 0 * * 2-6'
   workflow_dispatch: # Manual trigger để test
 
 env:
