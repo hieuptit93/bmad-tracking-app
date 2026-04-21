@@ -55,13 +55,10 @@ jobs:
 
           # Generate list of workdays from Monday to yesterday (current week only)
           WORKDAYS=""
-          CURRENT="$YESTERDAY"
-          while [[ "$CURRENT" >= "$MONDAY" ]]; do
-            DOW=$(date -u -d "$CURRENT" '+%u')
-            if [ "$DOW" -le 5 ]; then
-              WORKDAYS="$WORKDAYS $CURRENT"
-            fi
-            CURRENT=$(date -u -d "$CURRENT - 1 day" '+%Y-%m-%d')
+          DOW_YESTERDAY=$(date -u -d "$YESTERDAY" '+%u')  # 1=Mon ... 5=Fri
+          for i in $(seq 0 $((DOW_YESTERDAY - 1))); do
+            DAY=$(date -u -d "$YESTERDAY - $i days" '+%Y-%m-%d')
+            WORKDAYS="$WORKDAYS $DAY"
           done
           WORKDAYS=$(echo $WORKDAYS | tr ' ' '\n')
           echo "📆 Workdays this week: $(echo "$WORKDAYS" | wc -w)"
