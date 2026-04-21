@@ -22,19 +22,21 @@ jobs:
         run: |
           YESTERDAY=$(date -u -d "yesterday" '+%Y-%m-%d')
           TODAY=$(date -u '+%Y-%m-%d')
-          # Get 30 days ago for streak calculation
-          MONTH_AGO=$(date -u -d "30 days ago" '+%Y-%m-%d')
+          # Get Monday of current week (for streak calculation within this week only)
+          DOW=$(date -u -d "$YESTERDAY" '+%u')  # 1=Mon, 5=Fri
+          DAYS_SINCE_MONDAY=$((DOW - 1))
+          MONDAY=$(date -u -d "$YESTERDAY - $DAYS_SINCE_MONDAY days" '+%Y-%m-%d')
           echo "yesterday=$YESTERDAY" >> $GITHUB_OUTPUT
           echo "today=$TODAY" >> $GITHUB_OUTPUT
-          echo "month_ago=$MONTH_AGO" >> $GITHUB_OUTPUT
-          echo "📅 Checking reports for: $YESTERDAY"
+          echo "monday=$MONDAY" >> $GITHUB_OUTPUT
+          echo "📅 Checking reports for: $YESTERDAY (Week starting: $MONDAY)"
 
       - name: Query and calculate streaks
         id: query
         run: |
           YESTERDAY="${{ steps.dates.outputs.yesterday }}"
           TODAY="${{ steps.dates.outputs.today }}"
-          MONTH_AGO="${{ steps.dates.outputs.month_ago }}"
+          MONDAY="${{ steps.dates.outputs.monday }}"
 
           # Get all non-admin users
           USERS_RESPONSE=$(curl -s \
@@ -45,23 +47,25 @@ jobs:
           echo "👥 All non-admin users:"
           echo "$USERS_RESPONSE" | jq -r '.[] | .full_name // .email'
 
-          # Get logs from last 30 days (for streak calculation)
+          # Get logs from Monday of current week only
           LOGS_RESPONSE=$(curl -s \
-            "${SUPABASE_URL}/rest/v1/ai_impact_logs?created_at=gte.${MONTH_AGO}T00:00:00&select=user_id,created_at" \
+            "${SUPABASE_URL}/rest/v1/ai_impact_logs?created_at=gte.${MONDAY}T00:00:00&created_at=lt.${TODAY}T00:00:00&select=user_id,created_at" \
             -H "apikey: ${SUPABASE_SERVICE_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}")
 
-          # Generate list of workdays (Mon-Fri) from yesterday going back
+          # Generate list of workdays from Monday to yesterday (current week only)
           WORKDAYS=""
-          for i in $(seq 0 29); do
-            DAY=$(date -u -d "$YESTERDAY - $i days" '+%Y-%m-%d')
-            DOW=$(date -u -d "$DAY" '+%u')  # 1=Mon, 7=Sun
+          CURRENT="$YESTERDAY"
+          while [[ "$CURRENT" >= "$MONDAY" ]]; do
+            DOW=$(date -u -d "$CURRENT" '+%u')
             if [ "$DOW" -le 5 ]; then
-              WORKDAYS="$WORKDAYS $DAY"
+              WORKDAYS="$WORKDAYS $CURRENT"
             fi
+            CURRENT=$(date -u -d "$CURRENT - 1 day" '+%Y-%m-%d')
           done
-          WORKDAYS=$(echo $WORKDAYS | tr ' ' '\n' | head -20)  # Limit to 20 workdays
-          echo "📆 Workdays to check: $(echo "$WORKDAYS" | wc -w)"
+          WORKDAYS=$(echo $WORKDAYS | tr ' ' '\n')
+          echo "📆 Workdays this week: $(echo "$WORKDAYS" | wc -w)"
+          echo "$WORKDAYS"
 
           # Create a JSON array of workdays
           WORKDAYS_JSON=$(echo "$WORKDAYS" | jq -R -s 'split("\n") | map(select(length > 0))')
